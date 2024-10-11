@@ -21,18 +21,6 @@ Note: Changed the column names from Japanese to English (included here).
 - scikit-learn
 - tensorflow
 
-## Installation
-
-Clone the repository:
-```bash
-git clone <repository-url>
-```
-
-Install the required packages:
-```bash
-pip install -r requirements.txt
-```
-
 ## Usage
 
 ### Data Preprocessing
