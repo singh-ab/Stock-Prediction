@@ -3,6 +3,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def perform_eda(file_path):
+    """
+    Perform Exploratory Data Analysis (EDA) on the given CSV file.
+
+    Parameters:
+    file_path (str): Path to the CSV file.
+
+    Returns:
+    None
+    """
     # Load the CSV data
     df = pd.read_csv(file_path)
 

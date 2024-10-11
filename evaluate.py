@@ -4,6 +4,15 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from train import train_model
 
 def evaluate_model(file_path):
+    """
+    Evaluate the trained LSTM model on stock price data.
+
+    Parameters:
+    file_path (str): Path to the CSV file.
+
+    Returns:
+    None
+    """
     model, X_train, X_test, Y_train, Y_test, scaler = train_model(file_path)
 
     # Make predictions

@@ -7,6 +7,16 @@ from tensorflow.keras.regularizers import l2
 from pre import preprocess_data
 
 def create_dataset(data, time_step=1):
+    """
+    Create dataset for LSTM model training.
+
+    Parameters:
+    data (np.array): Scaled data.
+    time_step (int): Number of time steps for each sample.
+
+    Returns:
+    np.array: Features (X) and target (Y) arrays.
+    """
     X, Y = [], []
     for i in range(len(data) - time_step - 1):
         a = data[i:(i + time_step), 0]
@@ -15,6 +25,15 @@ def create_dataset(data, time_step=1):
     return np.array(X), np.array(Y)
 
 def add_features(df):
+    """
+    Add moving averages and volatility to the DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): Input DataFrame.
+
+    Returns:
+    pd.DataFrame: DataFrame with added features.
+    """
     # Ensure the correct column name is used
     if 'y' not in df.columns:
         raise KeyError("Column 'y' not found in DataFrame")
@@ -22,10 +41,22 @@ def add_features(df):
     df['MA_10'] = df['y'].rolling(window=10).mean()
     df['MA_20'] = df['y'].rolling(window=20).mean()
     df['Volatility'] = df['y'].rolling(window=10).std()
-    df.bfill(inplace=True)  # Use bfill instead of fillna with method
+    df.bfill(inplace=True) 
     return df
 
-def train_model(file_path, model_path='stock_model.h5', retrain=False):
+def train_model(file_path, model_path='stock_model.h5', retrain= True):
+    """
+    Train LSTM model on stock price data.
+
+    Parameters:
+    file_path (str): Path to the CSV file.
+    model_path (str): Path to save/load the model.
+    retrain (bool): Whether to retrain the model.
+
+    Returns:
+    tuple: Trained model, training and test datasets, and scaler.
+    """
+    # Preprocess data and add features
     scaled_df, scaler = preprocess_data(file_path)
     scaled_df = add_features(scaled_df)
     scaled_data = scaled_df.values

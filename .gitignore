@@ -3,6 +3,7 @@ node_modules/
 
 myenv/
 __pycache__/
+stock_model.h5
 
 # Ignore log files
 *.log
