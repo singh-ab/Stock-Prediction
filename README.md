@@ -1,6 +1,7 @@
 # Stock Price Prediction with LSTM
 
 This project aims to predict stock prices using a Long Short-Term Memory (LSTM) neural network. The project includes data preprocessing, feature engineering, model training, and evaluation.
+Note: Changed the column names from Japanese to English (included here).
 
 ## Project Structure
 
