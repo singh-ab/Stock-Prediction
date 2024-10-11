@@ -1,6 +1,9 @@
+import os
 import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+import pandas as pd
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.regularizers import l2
 from pre import preprocess_data
 
 def create_dataset(data, time_step=1):
@@ -11,8 +14,20 @@ def create_dataset(data, time_step=1):
         Y.append(data[i + time_step, 0])
     return np.array(X), np.array(Y)
 
-def train_model(file_path):
+def add_features(df):
+    # Ensure the correct column name is used
+    if 'y' not in df.columns:
+        raise KeyError("Column 'y' not found in DataFrame")
+
+    df['MA_10'] = df['y'].rolling(window=10).mean()
+    df['MA_20'] = df['y'].rolling(window=20).mean()
+    df['Volatility'] = df['y'].rolling(window=10).std()
+    df.bfill(inplace=True)  # Use bfill instead of fillna with method
+    return df
+
+def train_model(file_path, model_path='stock_model.h5', retrain=False):
     scaled_df, scaler = preprocess_data(file_path)
+    scaled_df = add_features(scaled_df)
     scaled_data = scaled_df.values
 
     time_step = 60
@@ -27,20 +42,31 @@ def train_model(file_path):
     X_train, X_test = X[0:train_size], X[train_size:len(X)]
     Y_train, Y_test = Y[0:train_size], Y[train_size:len(Y)]
 
-    # Build the LSTM model
-    model = Sequential()
-    model.add(LSTM(50, return_sequences=True, input_shape=(time_step, 1)))
-    model.add(LSTM(50, return_sequences=False))
-    model.add(Dense(25))
-    model.add(Dense(1))
+    # Check if the model already exists and retrain flag is False
+    if os.path.exists(model_path) and not retrain:
+        model = load_model(model_path)
+        print("Model loaded from disk.")
+    else:
+        # Build the LSTM model with Dropout layers and L2 regularization
+        model = Sequential()
+        model.add(LSTM(50, return_sequences=True, input_shape=(time_step, 1)))
+        model.add(Dropout(0.3))  # First LSTM layer with 0.3 dropout
+        model.add(LSTM(50, return_sequences=False))
+        model.add(Dropout(0.2))  # Second LSTM layer with 0.2 dropout
+        model.add(Dense(25, kernel_regularizer=l2(0.01)))  # Add L2 regularization
+        model.add(Dense(1, kernel_regularizer=l2(0.01)))  # Add L2 regularization
 
-    # Compile the model
-    model.compile(optimizer='adam', loss='mean_squared_error')
+        # Compile the model
+        model.compile(optimizer='adam', loss='mean_squared_error')
 
-    # Train the model
-    model.fit(X_train, Y_train, batch_size=1, epochs=1)
+        # Train the model
+        model.fit(X_train, Y_train, batch_size=1, epochs=20)
+
+        # Save the model to disk
+        model.save(model_path)
+        print("Model saved to disk.")
 
     return model, X_train, X_test, Y_train, Y_test, scaler
 
 if __name__ == "__main__":
-    model, X_train, X_test, Y_train, Y_test, scaler = train_model('stock_price.csv')
+    model, X_train, X_test, Y_train, Y_test, scaler = train_model('stock_price.csv', retrain= False)

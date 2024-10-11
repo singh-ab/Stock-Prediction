@@ -37,5 +37,18 @@ def evaluate_model(file_path):
     plt.legend()
     plt.show()
 
+    # Residual analysis
+    train_residuals = Y_train - train_predict.flatten()
+    test_residuals = Y_test - test_predict.flatten()
+
+    plt.figure(figsize=(14, 7))
+    plt.plot(range(len(train_residuals)), train_residuals, label='Train Residuals')
+    plt.plot(range(len(train_residuals), len(train_residuals) + len(test_residuals)), test_residuals, label='Test Residuals')
+    plt.title('Residuals Analysis')
+    plt.xlabel('Time')
+    plt.ylabel('Residuals')
+    plt.legend()
+    plt.show()
+
 if __name__ == "__main__":
     evaluate_model('stock_price.csv')
